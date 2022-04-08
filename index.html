@@ -48,6 +48,11 @@
             margin: 10px auto;
             width: 30%;
         }
+        @media only screen and (max-width: 580px) {
+            .main>div{
+                width: 100%;
+            }
+        }
         canvas{
             background-color: var(--fore);
             border: 1px black solid;
@@ -137,7 +142,7 @@
             const canvases = document.querySelectorAll("canvas");
             for(const canvas of canvases){
                 if(window.innerWidth <= 580){ // mobile
-                    canvas.width = canvas.parentElement.parentElement.clientWidh - 10;
+                    canvas.width = canvas.parentElement.parentElement.clientWidth - 10;
                 } else {
                     canvas.width = (canvas.parentElement.parentElement.clientWidth) / 3.3;
                 }
