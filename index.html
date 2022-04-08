@@ -5,8 +5,282 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorting</title>
+    <style>
+        :root{
+            --fore: black;
+            --back: white;
+        }
+        html{
+            background-color: var(--back);
+        }
+        h1,h3,label,button{
+            font-family: sans-serif;
+            color: var(--fore);
+        }
+        h1 {
+            font-size: 40px;
+            margin: 20px;
+        }
+        .menu{
+            margin:20px;
+        }
+        .menu>*{
+            margin:5px 10px;
+        }
+        .checkbox{
+            display: inline-block;
+            padding:5px;
+        }
+        .checkbox input{
+            margin-right:4px;
+        }
+        button{
+            padding:10px;
+            background-color:var(--back);
+        }
+        .main{
+            display:flex;
+            width:100%;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .main>div{
+            margin: 10px auto;
+            width: 30%;
+        }
+        canvas{
+            background-color: var(--fore);
+            border: 1px black solid;
+        }
+    </style>
+    <script>
+        let arr = [1,2];
+        let updaters = {};
+        class Updater {
+            constructor(id, arr){
+                this.id = id;
+                this.arr = arr.slice();
+                this.ordered = "#33FF4F";
+                this.structered = '#CEECD2';
+                this.unordered = "#919191";
+                // this.unordered = 'white';
+                this.selected = "#FC6142";
+                this.looked = "#3FFAB3";
+                this.aborting = false;
+                this.max = Math.max(...this.arr);
+                if(arr.length > 50){
+                    alert('max array length 50');
+                    return;
+                }
+                if(arr.some(e => e < 0)){
+                    alert('array cannot contain negative values');
+                    return;
+                }
+                this.canvas = document.getElementById(this.id);
+                this.ctx = this.canvas.getContext('2d');
+                this.initialDraw();
+            }
+            run(){
+                window[this.id](this.arr,this);
+            }
+            abort(){
+                this.aborting = true;
+            }
+            updateHeight(i,type){
+                if(type == undefined){
+                    type = 'unordered';
+                } 
+                const height = (this.arr[i]/this.max) * this.canvas.height;
+                const rectWidth = this.canvas.width / this.arr.length;
+                this.ctx.clearRect(i*rectWidth-1,0,rectWidth+2,this.canvas.height);
+                this.ctx.beginPath();
+                this.ctx.fillStyle = this[type];
+                this.ctx.strokeStyle = 'black';
+                this.ctx.rect(i*rectWidth,this.canvas.height - height,rectWidth,height);
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
+            async initialDraw(){
+                await this.tick();
+                const rectWidth = this.canvas.width / this.arr.length;
+                this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+                this.ctx.beginPath();
+                this.ctx.fillStyle = this.unordered;
+                for(let i = 0; i < this.arr.length; i++){
+                    const height = (this.arr[i]/this.max) * this.canvas.height;
+                    this.ctx.rect(i*rectWidth,this.canvas.height-height,rectWidth,height);
+                }
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
+            sleep(time){
+                if(this.aborting){
+                    aborting();
+                }
+                const promise = new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            resolve();
+                        }, time);
+                    });
+                return promise;
+            }
+            tick(){
+                const time = document.getElementById('t').value * 20;
+                return this.sleep(time);
+            } 
+            halfTick(){
+                const time = document.getElementById('t').value * 10;
+                return this.sleep(time);
+            }
+        }
+        function setCanvasDimension(){
+            const canvases = document.querySelectorAll("canvas");
+            for(const canvas of canvases){
+                if(window.innerWidth <= 580){ // mobile
+                    canvas.width = canvas.parentElement.parentElement.clientWidh - 10;
+                } else {
+                    canvas.width = (canvas.parentElement.parentElement.clientWidth) / 3.3;
+                }
+                canvas.height = canvas.width * 600 / 800;
+            }
+        }
+        function updateCanvas(){
+            const canvases = document.querySelectorAll('canvas');
+            const time = document.getElementById('t').value;
+            for(const canvas of canvases){
+                if(updaters[canvas.id] != undefined){
+                    updaters[canvas.id].abort();
+                }
+                updaters[canvas.id] = new Updater(canvas.id,arr);
+            }
+        }
+        function startCanvas(){
+            const canvases = document.querySelectorAll('canvas');
+            const time = document.getElementById('t').value;
+            for(const canvas of canvases){
+                if(updaters[canvas.id] != undefined){
+                    updaters[canvas.id].abort();
+                }
+                updaters[canvas.id] = new Updater(canvas.id,arr);
+                updaters[canvas.id].run();
+            }
+        }
+        window.addEventListener("DOMContentLoaded",()=>{
+            setCanvasDimension();
+            randomShuffle();
+            updateCanvas();
+            setupCheckbox();
+        });
+        function randomShuffle(){
+           const n = document.getElementById('n').value;
+           arr = new Array(n); 
+           for(let i = 0; i < n; i++){
+               arr[i] = i + 1;
+           }
+           for(let i = 0; i < n; i++){
+                const r = Math.floor(Math.random() * (n-i)); 
+                let tmp = arr[i];
+                arr[i] = arr[r];
+                arr[r] = tmp;
+           }
+        }
+        function setupCheckbox(){
+            const canvases = document.querySelectorAll('canvas');
+            const menu = document.getElementsByClassName('menu')[0];
+            const div = document.createElement('div');
+            for(const canvas of canvases){
+                const div2 = document.createElement('div');
+                const check = document.createElement('input');
+                check.type = 'checkbox';
+                check.checked = 1;
+                check.name = canvas.id;
+                check.onchange = function(){
+                    console.log(this);
+                    if(this.checked){
+                        canvas.parentElement.style.setProperty('display','initial');
+                    }else{
+                        canvas.parentElement.style.setProperty('display','none');
+                    }
+                }
+                const label = document.createElement('label');
+                label.for = canvas.id;
+                label.textContent = canvas.previousElementSibling.textContent;
+                div2.appendChild(check);
+                div2.appendChild(label);
+                div2.classList += "checkbox";
+                div.appendChild(div2);
+            }
+            menu.appendChild(div);
+        }
+    </script>
 </head>
 <body>
-    Visual Sorting Algorithm Comparison 
+    <h1>Visual Sorting Algorithm Comparison </h1>
+    <div class="menu">
+        <h3>Menu</h3>  
+        <span>
+            <label for="n">N</label>
+            <input id="n" name="n" onchange="randomShuffle();updateCanvas()" type="number" max="50" min="2" value="30"/>
+        </span>
+        <span>
+            <label for="t">Speed</label>
+            <input id="t" name="t" type="range" min="1" max="10" value="5"/>
+        </span>
+        <button onclick="randomShuffle();updateCanvas()">Random Shuffle</button>
+        <button onclick="startCanvas();">Start</button>
+    </div>
+    <div class="main">
+        <div>
+            <h3>Selection Sort</h3>
+            <canvas id="selection_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Shell Sort</h3>
+            <canvas id="shell_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Insertion Sort</h3>
+            <canvas id="insertion_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Merge Sort</h3>
+            <canvas id="merge_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Quick Sort</h3>
+            <canvas id="quick_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Heap Sort</h3>
+            <canvas id="heap_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Bubble Sort</h3>
+            <canvas id="bubble_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Comb Sort</h3>
+            <canvas id="comb_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Shaker Sort</h3>
+            <canvas id="shaker_sort">
+            </canvas>
+        </div>
+        <div>
+            <h3>Count Sort</h3>
+            <canvas id="count_sort">
+            </canvas>
+        </div>
+    </div>
+    <script src="sorting.js"></script>
 </body>
 </html>
