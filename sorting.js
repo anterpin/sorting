@@ -212,7 +212,9 @@ async function _quick_sort(a, b, arr, updater) {
   }
   if (a + 1 >= b) return;
   const pivot = arr[b - 1];
+  
   updateHeight(b-1,updater,'selected');
+
   let location = a;
   for (let i = a; i < b - 1; i++) {
     updateHeight(i,updater,'looked');
@@ -229,7 +231,7 @@ async function _quick_sort(a, b, arr, updater) {
     updateHeight(i,updater); 
   }
   swap(b - 1, location, arr);
-  updateHeight(b-1,updater,'unoredered');
+  updateHeight(b-1,updater);
   updateHeight(location,updater,'ordered');
   await _quick_sort(a, location, arr, updater);
   await _quick_sort(location + 1, b, arr, updater);

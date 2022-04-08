@@ -68,7 +68,6 @@
                 this.ordered = "#33FF4F";
                 this.structered = '#CEECD2';
                 this.unordered = "#919191";
-                // this.unordered = 'white';
                 this.selected = "#FC6142";
                 this.looked = "#3FFAB3";
                 this.aborting = false;
@@ -85,7 +84,8 @@
                 this.ctx = this.canvas.getContext('2d');
                 this.initialDraw();
             }
-            run(){
+            async run(){
+                await this.tick();
                 window[this.id](this.arr,this);
             }
             abort(){
@@ -200,7 +200,6 @@
                 check.checked = 1;
                 check.name = canvas.id;
                 check.onchange = function(){
-                    console.log(this);
                     if(this.checked){
                         canvas.parentElement.style.setProperty('display','initial');
                     }else{
@@ -246,6 +245,11 @@
             </canvas>
         </div>
         <div>
+            <h3>Quick Sort</h3>
+            <canvas id="quick_sort">
+            </canvas>
+        </div>
+        <div>
             <h3>Insertion Sort</h3>
             <canvas id="insertion_sort">
             </canvas>
@@ -253,11 +257,6 @@
         <div>
             <h3>Merge Sort</h3>
             <canvas id="merge_sort">
-            </canvas>
-        </div>
-        <div>
-            <h3>Quick Sort</h3>
-            <canvas id="quick_sort">
             </canvas>
         </div>
         <div>
